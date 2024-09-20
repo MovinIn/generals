@@ -1,7 +1,6 @@
 package botting.generals;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
@@ -11,9 +10,9 @@ import java.util.*;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
+import callback.DataListener;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -27,7 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 class GeneralSocket extends WebSocketClient {
-  private String userid=Accounts.RANDOM_1.as();
+  private String userid=Accounts.GAPPED.as();
   private static final int HEARTBEAT=500;
   private final Timer t;
   private final PriorityQueue<String> queue;
@@ -36,6 +35,16 @@ class GeneralSocket extends WebSocketClient {
   private static final String XHR_POLLING = "https:"+PUBLIC_ENDPOINT+"&transport=polling";
   private static final String CHANGE_ME="sd09fjd203i0ejwi_changeme";
   private String sid;
+  private DataListener<SocketMessage> listener;
+  private static final PrintWriter out;
+
+  static{
+    try {
+      out = new PrintWriter(new BufferedWriter(new FileWriter("socket.out")));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   public static GeneralSocket createGeneralSocket() {
     GeneralSocket socket;
@@ -70,6 +79,13 @@ class GeneralSocket extends WebSocketClient {
     return null;
   }
 
+  public static GeneralSocket createGeneralSocket(DataListener<SocketMessage> listener) {
+    GeneralSocket socket=createGeneralSocket();
+    if(socket==null) return null;
+    socket.listener=listener;
+    return socket;
+  }
+
   public GeneralSocket(URI serverUri) {
     super(serverUri);
     queue=new PriorityQueue<>();
@@ -88,31 +104,37 @@ class GeneralSocket extends WebSocketClient {
     System.out.println("Connected!");
     t.scheduleAtFixedRate(task, HEARTBEAT*2, HEARTBEAT);
     sendSlow("2probe");
-    sendSlow("5");
+    listener.call(new SocketMessage(SocketMessageType.OPEN));
   }
 
   @Override
   public void onMessage(String message) {
-    System.out.println("received: " + message);
+    if(message.equals("3probe")){
+      send("5");
+      try {Thread.sleep(1000);} catch (InterruptedException ignored) {}
+      listener.call(new SocketMessage(SocketMessageType.CONNECTED));
+      return;
+    }
     if(message.equals("2")) {
       send("3");
+      listener.call(new SocketMessage(SocketMessageType.PROBE));
+      return;
     }
+    out.println("received: " + message);
+    out.flush();
+    listener.call(new SocketMessage(SocketMessageType.MESSAGE,message));
   }
 
   @Override
   public void onClose(int code, String reason, boolean remote) {
     System.out.println("Disconnected!");
+    listener.call(new SocketMessage(SocketMessageType.CLOSED));
   }
 
   @Override
   public void onError(Exception ex) {
     ex.printStackTrace();
   }
-
-  public void send(String text) {
-    super.send(text);
-  }
-
 
   public void sendSlow(String text) {
     queue.add(text);
@@ -168,5 +190,13 @@ class GeneralSocket extends WebSocketClient {
 
   public void forceStart(String custom) {
     send(XHRUtils.buildXHR(new JSONArray(new Object[]{"set_force_start",custom,true})));
+  }
+
+  public void surrender(){
+    send("42[\"surrender\"]");
+  }
+
+  public void move(){
+    //TODO: implement
   }
 }
