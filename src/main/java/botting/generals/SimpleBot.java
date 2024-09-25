@@ -2,11 +2,13 @@ package botting.generals;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
-public class AutoSurrenderBot extends Bot {
+public class SimpleBot extends Bot{
+  private final Map map;
+  public SimpleBot() {
+    map=new Map();
+  }
 
   @Override
   public void processSocketMessage(SocketMessage message) {
@@ -17,20 +19,20 @@ public class AutoSurrenderBot extends Bot {
         throw new RuntimeException(e);
       }
     }
-    else if(message.type==SocketMessageType.CLOSED) {
-
-    }
     else if(message.type==SocketMessageType.MESSAGE) {
       String mode=message.data.getString(0);
+      JSONObject gamedata;
       switch(mode) {
         case "queue_update":
-          JSONObject gamedata=message.data.getJSONObject(1);
-
+          gamedata=message.data.getJSONObject(1);
           if(!gamedata.getBoolean("isForcing")&&gamedata.getInt("numPlayers")>1)
             socket.forceStart(custom);
           break;
+        case "game_update":
+          map.update(message.data.getJSONObject(1));
+          break;
         case "game_start":
-          socket.surrender();
+          map.start(message.data.getJSONObject(1));
           break;
         case "game_over":
           joinCustomRoom(custom);

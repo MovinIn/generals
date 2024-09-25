@@ -47,6 +47,7 @@ public class App
         break;
       case "forcestart":
         socket.forceStart(split[1]);
+        break;
     }
   }
 }

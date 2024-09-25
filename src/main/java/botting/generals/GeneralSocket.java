@@ -1,9 +1,13 @@
 package botting.generals;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -18,8 +22,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
@@ -37,6 +45,8 @@ class GeneralSocket extends WebSocketClient {
   private String sid;
   private DataListener<SocketMessage> listener;
   private static final PrintWriter out;
+
+  public static final int FAST_GAME_SPEED=2;
 
   static{
     try {
@@ -71,6 +81,7 @@ class GeneralSocket extends WebSocketClient {
       socket = new GeneralSocket(uri);
       socket.setSocketFactory(sslSocketFactory);
       socket.sid=sid;
+      socket.listener= data1 -> {};
       socket.connect();
       return socket;
     } catch (URISyntaxException | KeyManagementException | NoSuchAlgorithmException e) {
@@ -196,7 +207,12 @@ class GeneralSocket extends WebSocketClient {
     send("42[\"surrender\"]");
   }
 
-  public void move(){
-    //TODO: implement
+  public void attack(Attack attack){
+    send(XHRUtils.buildXHR(attack.asData()));
+  }
+
+  public void fast(String custom){
+    send(XHRUtils.buildXHR("425",new JSONArray(new Object[]{"set_custom_options",custom,
+        new JSONObject(java.util.Map.of("game_speed",FAST_GAME_SPEED))})));
   }
 }

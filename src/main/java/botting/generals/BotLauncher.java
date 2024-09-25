@@ -1,8 +1,8 @@
 package botting.generals;
 
 public class BotLauncher {
-  private static AutoSurrenderBot bot;
-  public static void main(String[]args) throws InterruptedException {
-    bot=new AutoSurrenderBot();
+  private static Bot bot;
+  public static void main(String[]args) {
+    bot=new StartBot();
   }
 }
