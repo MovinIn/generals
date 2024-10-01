@@ -12,7 +12,7 @@ public class startsimulation {
   public static final int pathlength=51;
 
   public static void main(String[]args) throws IOException {
-    out=new PrintWriter(new BufferedWriter(new FileWriter("starts.out")));
+    out=new PrintWriter(new BufferedWriter(new FileWriter("out/starts/starts.out")));
     start(11,21,new ArrayList<>());
   }
 

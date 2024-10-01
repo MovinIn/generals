@@ -47,10 +47,11 @@ class GeneralSocket extends WebSocketClient {
   private static final PrintWriter out;
 
   public static final int FAST_GAME_SPEED=2;
+  public static final int SUPER_GAME_SPEED=4;
 
   static{
     try {
-      out = new PrintWriter(new BufferedWriter(new FileWriter("socket.out")));
+      out = new PrintWriter(new BufferedWriter(new FileWriter("out/socket.out")));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -211,8 +212,14 @@ class GeneralSocket extends WebSocketClient {
     send(XHRUtils.buildXHR(attack.asData()));
   }
 
-  public void fast(String custom){
+  public void fast(String custom,GameSpeed speed){
     send(XHRUtils.buildXHR("425",new JSONArray(new Object[]{"set_custom_options",custom,
-        new JSONObject(java.util.Map.of("game_speed",FAST_GAME_SPEED))})));
+        new JSONObject(java.util.Map.of("game_speed",speed.speed))})));
+  }
+
+  public void nofog(String custom){
+    JSONObject o=new JSONObject();
+    o.put("modifiers",new JSONArray(new Object[]{3}));
+    send(XHRUtils.buildXHR("425",new JSONArray(new Object[]{"set_custom_options",custom,o})));
   }
 }

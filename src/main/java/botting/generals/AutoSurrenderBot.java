@@ -11,7 +11,7 @@ public class AutoSurrenderBot extends Bot {
   @Override
   public void processSocketMessage(SocketMessage message) {
     if(message.type==SocketMessageType.CONNECTED) {
-      try(BufferedReader br=new BufferedReader(new FileReader("room.in"))) {
+      try(BufferedReader br=new BufferedReader(new FileReader("in/room.in"))) {
         joinCustomRoom(br.readLine());
       } catch (IOException e) {
         throw new RuntimeException(e);

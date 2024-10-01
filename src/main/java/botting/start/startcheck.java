@@ -7,10 +7,10 @@ import java.util.StringTokenizer;
 
 public class startcheck {
   public static void main(String[]args) throws IOException {
-    BufferedReader f = new BufferedReader(new FileReader("starts.out"));
-    PrintWriter out25=new PrintWriter(new BufferedWriter(new FileWriter("start25.out")));
-    PrintWriter out24=new PrintWriter(new BufferedWriter(new FileWriter("start24.out")));
-    PrintWriter out23=new PrintWriter(new BufferedWriter(new FileWriter("start23.out")));
+    BufferedReader f = new BufferedReader(new FileReader("out/starts/starts.out"));
+    PrintWriter out25=new PrintWriter(new BufferedWriter(new FileWriter("out/starts/start25.out")));
+    PrintWriter out24=new PrintWriter(new BufferedWriter(new FileWriter("out/starts/start24.out")));
+    PrintWriter out23=new PrintWriter(new BufferedWriter(new FileWriter("out/starts/start23.out")));
     String l;
     int start;
     while((l=f.readLine())!=null){

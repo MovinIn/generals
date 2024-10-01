@@ -1,5 +1,6 @@
 package botting.generals;
 
+import botting.map.EmptySpaces;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import patcher.MapPatcher;
@@ -31,13 +32,16 @@ public class Map {
   public static final int FOG_OBSTACLE = -4;
   public static final int INVALID=-5;
 
-  public static final int ENEMY = 0;
-  public static final int FRIENDLY = 1;
+  public static final int ENEMY = 1;//double check this
+  public static final int FRIENDLY = 0;
+
+  public static final int MINIMUM_GENERAL_DISTANCE=15;
+  private Set<Integer> emptyCorners;
 
   public Map() {
     fillDefault();
     try {
-      out=new PrintWriter(new BufferedWriter(new FileWriter("map.out")));
+      out=new PrintWriter(new BufferedWriter(new FileWriter("out/map.out")));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -67,6 +71,7 @@ public class Map {
     turn=0;
     mountains=new HashSet<>();
     cities=new HashSet<>();
+    emptyCorners=new HashSet<>();
     generalme=-1;
   }
 
@@ -119,10 +124,15 @@ public class Map {
         &&!cities.contains(position);
   }
 
+  public int center(){
+    return (h/2)*w+w/2;//not an `exact` center.
+  }
+
   public boolean legalMove(int pos1,int pos2){
-    if(!withinBounds(pos1)||!withinBounds(pos2)||!permeable(pos2)){
-      return false;
-    }
+    return adjacent(pos1,pos2)&&permeable(pos2);
+  }
+  public boolean adjacent(int pos1,int pos2){
+    if(!withinBounds(pos1)||!withinBounds(pos2))return false;
     if(Math.abs(pos1-pos2)==w){
       return true;
     }
@@ -141,6 +151,9 @@ public class Map {
   public int[] dxs(){
     return new int[]{1,-1,w,-w};
   }
+  public int[] dxs(int pos){
+    return new int[]{1+pos,-1+pos,w+pos,-w+pos};
+  }
 
   public int[] pt(int pos){
     return new int[]{pos%w,pos/w};
@@ -150,5 +163,14 @@ public class Map {
     int[] pt1=pt(pos);
     int[] pt2=pt(pos2);
     return Math.sqrt(Math.pow(pt1[0]-pt2[0],2)+Math.pow(pt1[1]-pt2[1],2));
+  }
+  public int manhat(int pos,int pos2) {
+    return Math.abs(pos%w-pos2%w)+Math.abs(pos/w-pos2/w);
+  }
+  public Set<Integer> getEmptyCorners(){
+    if(emptyCorners.isEmpty()){
+      emptyCorners= EmptySpaces.emptyCorners(this);
+    }
+    return emptyCorners;
   }
 }
